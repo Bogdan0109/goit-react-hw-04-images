@@ -13,7 +13,7 @@ export function App() {
   const [photos, setPhotos] = useState([]);
   const [page, setPage] = useState(1);
   const [pageHight, setPageHight] = useState(null);
-  const [endOfCollection, setEndOfCollection] = useState(0);
+  const [endOfCollection, setEndOfCollection] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalHits, setTotalHits] = useState(null);
@@ -28,6 +28,8 @@ export function App() {
   };
 
   useEffect(() => {
+    // const controller = new AbortController();
+
     if (query === '') return;
 
     setTimeout(() => scrollToNewImages(pageHight), 500);
@@ -36,15 +38,26 @@ export function App() {
 
     try {
       const resultFetch = async () => {
-        const { hits, totalHits, endOfCollection } = await addMaterial(
-          query,
-          page
+        // const { hits, totalHits, endOfCollection } = await addMaterial(
+        //   query,
+        //   page
+        // );
+        const { hits, pages, totalHits } = await addMaterial(query, page);
+        const normalizedHits = hits.map(
+          ({ id, tags, webformatURL, largeImageURL }) => ({
+            id,
+            tags,
+            webformatURL,
+            largeImageURL,
+          })
         );
-        setPhotos(prevState => [...prevState, ...hits]);
+        setPhotos(prevState => [...prevState, ...normalizedHits]);
         setTotalHits(totalHits);
-        setEndOfCollection(endOfCollection);
+        // setEndOfCollection(endOfCollection);
         setIsLoading(false);
-
+        if (page === pages) {
+          setEndOfCollection(true);
+        }
         if (totalHits === 0) {
           setWaitingSearched(true);
         }
@@ -54,7 +67,7 @@ export function App() {
     } catch (error) {
       setError('Мы не смогли загрузить фото');
     }
-  }, [page, pageHight, query]);
+  }, [endOfCollection, page, pageHight, query, totalHits]);
 
   const loadMore = () => {
     setPage(prevState => prevState + 1);
@@ -87,7 +100,7 @@ export function App() {
 
         {isLoading && <Loader />}
 
-        {endOfCollection > 0 && !isLoading ? (
+        {!endOfCollection && !isLoading && !waitingSearched ? (
           <Button onClick={loadMore} />
         ) : null}
       </Wrapper>

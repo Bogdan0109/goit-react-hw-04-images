@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Modal } from '../Modal/Modal';
 import './ImageGalleryItem.scss';
 
-export function ImageGalleryItem({ largeImageURL, webformatURL }) {
+export function ImageGalleryItem({ tags, largeImageURL, webformatURL }) {
   const [showModal, setShowModal] = useState(false);
 
   const toggleModal = () => {
@@ -14,14 +14,14 @@ export function ImageGalleryItem({ largeImageURL, webformatURL }) {
     <>
       {showModal && (
         <Modal onClose={toggleModal}>
-          <img src={largeImageURL} alt="" />
+          <img src={largeImageURL} alt={tags} />
         </Modal>
       )}
 
       <img
         className="ImageGalleryItem-image"
         src={webformatURL}
-        alt="asdasdasdasd"
+        alt={tags}
         onClick={toggleModal}
       />
     </>
