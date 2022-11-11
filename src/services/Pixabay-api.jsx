@@ -3,7 +3,7 @@ import axios from 'axios';
 const KEY = '29839348-b0d5a68a29b9200dfb336da94';
 axios.defaults.baseURL = 'https://pixabay.com/api/';
 // axios.defaults.headers.common['X-RateLimit-Reset'] = KEY;
-export async function addMaterial(query, page) {
+export async function addMaterial(query, page, signal) {
   // const controller = new AbortController();
 
   // const signal = controller.signal;
@@ -19,7 +19,7 @@ export async function addMaterial(query, page) {
 
   const response = await axios.get(``, {
     params,
-    // signal,
+    signal,
   });
   const { totalHits, hits } = response.data;
   //! endOfCollection - это цифра еще НЕ ПРОСМОТРЕННЫХ элементов коллекции

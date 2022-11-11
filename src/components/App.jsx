@@ -24,25 +24,26 @@ export function App() {
 
     setQuery(data);
     setPhotos([]);
+    setEndOfCollection(false);
     setPage(1);
   };
 
   useEffect(() => {
-    // const controller = new AbortController();
-
     if (query === '') return;
 
     setTimeout(() => scrollToNewImages(pageHight), 500);
     setIsLoading(true);
     setWaitingSearched(false);
 
-    try {
-      const resultFetch = async () => {
-        // const { hits, totalHits, endOfCollection } = await addMaterial(
-        //   query,
-        //   page
-        // );
-        const { hits, pages, totalHits } = await addMaterial(query, page);
+    const controller = new AbortController();
+
+    const resultFetch = async () => {
+      try {
+        const { hits, pages, totalHits } = await addMaterial(
+          query,
+          page,
+          controller.signal
+        );
         const normalizedHits = hits.map(
           ({ id, tags, webformatURL, largeImageURL }) => ({
             id,
@@ -53,21 +54,27 @@ export function App() {
         );
         setPhotos(prevState => [...prevState, ...normalizedHits]);
         setTotalHits(totalHits);
-        // setEndOfCollection(endOfCollection);
-        setIsLoading(false);
+
         if (page === pages) {
           setEndOfCollection(true);
         }
+
         if (totalHits === 0) {
           setWaitingSearched(true);
         }
-      };
+      } catch (error) {
+        setError('Мы не смогли загрузить фото');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-      resultFetch();
-    } catch (error) {
-      setError('Мы не смогли загрузить фото');
-    }
-  }, [endOfCollection, page, pageHight, query, totalHits]);
+    resultFetch();
+
+    return () => {
+      controller.abort();
+    };
+  }, [page, pageHight, query]);
 
   const loadMore = () => {
     setPage(prevState => prevState + 1);
